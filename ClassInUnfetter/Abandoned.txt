@@ -1,0 +1,114 @@
+
+        case idButton + 2://button print
+        {
+            WCHAR shwnd[64];
+            hdcThisWindow = NULL;
+            HWND hDstWnd = hWnd;
+            auto err = GetLastError();
+            GetWindowText(hLineEdit, shwnd, 64);
+            swscanf(shwnd, L"%X", &hClassInWindow);
+            if(!hClassInWindow || wcsnlen(shwnd, 64) > 8) {
+                wprintf(L"[E] Invalid Input\n");
+                break;
+            }
+            CheckReleaseDC(hDstWnd, hdcThisWindow);
+            CheckDeleteDC(hdcThisMem);
+            CheckDeleteObject(hThisBmp);
+            hdcThisWindow = GetDC(hDstWnd), hdcThisMem = CreateCompatibleDC(hdcThisWindow);
+            RECT rectWnd{ 0 };
+            GetClientRect(hClassInWindow, &rectWnd);
+            nClassInWindowWidth = rectWnd.right - rectWnd.left, nClassInWindowHeight = rectWnd.bottom - rectWnd.top;
+            if(nClassInWindowWidth < 0)
+                nClassInWindowWidth = 0;
+            if(nClassInWindowHeight < 0)
+                nClassInWindowHeight = 0;
+            // create&select bitmap
+            hThisBmp = CreateCompatibleBitmap(hdcThisWindow, nClassInWindowWidth, nClassInWindowHeight);
+            SelectObject(hdcThisMem, hThisBmp);
+            RedrawView();
+
+            // refresh scroll bar
+            SCROLLINFO info;
+            info.cbSize = sizeof(SCROLLINFO);
+            info.fMask = SIF_ALL;
+            info.nMin = 0;
+            info.nMax = nClassInWindowWidth;
+            if(info.nMax < 0)info.nMax = 0;
+            info.nPage = nViewWidth;
+            info.nPos = 0;
+            info.nTrackPos = 0;
+            SetScrollInfo(hWnd, SB_HORZ, &info, TRUE);
+            info.cbSize = sizeof(SCROLLINFO);
+            info.fMask = SIF_ALL;
+            info.nMin = 0;
+            info.nMax = nClassInWindowHeight;
+            if(info.nMax < 0)info.nMax = 0;
+            info.nPage = nViewHeight;
+            info.nPos = 0;
+            info.nTrackPos = 0;
+            SetScrollInfo(hWnd, SB_VERT, &info, TRUE);
+        }
+        break;
+        case idButton + 3://button restyle
+        {
+            WCHAR shwnd[64];
+            HWND hwnd = NULL;
+            GetWindowText(hLineEdit, shwnd, 64);
+            swscanf(shwnd, L"%X", &hwnd);
+            if(!hwnd || wcsnlen(shwnd, 64) > 8) {
+                wprintf(L"[E] Invalid Input\n");
+                break;
+            }
+            //LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+            SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_NOACTIVATE);
+        //ShowWindow(hwnd, SW_HIDE);
+        }
+        break;
+        case idButton + 4://button restore
+        {
+            WCHAR shwnd[64];
+            HWND hwnd = NULL;
+            GetWindowText(hLineEdit, shwnd, 64);
+            swscanf(shwnd, L"%X", &hwnd);
+            if(!hwnd || wcsnlen(shwnd, 64) > 8) {
+                wprintf(L"[E] Invalid Input\n");
+                break;
+            }
+            //LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+            SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) & (~WS_EX_NOACTIVATE));
+        }
+        break;
+        case idButton + 5://button to bottom
+        {
+            WCHAR shwnd[64];
+            HWND hwnd = NULL;
+            GetWindowText(hLineEdit, shwnd, 64);
+            swscanf(shwnd, L"%X", &hwnd);
+            if(!hwnd || wcsnlen(shwnd, 64) > 8) {
+                wprintf(L"[E] Invalid Input\n");
+                break;
+            }
+            SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOACTIVATE);
+        }
+        break;
+        case idButton + 6://button move
+        {
+            WCHAR shwnd[64];
+            HWND hwnd = NULL;
+            GetWindowText(hLineEdit, shwnd, 64);
+            swscanf(shwnd, L"%X", &hwnd);
+            if(!hwnd || wcsnlen(shwnd, 64) > 8) {
+                wprintf(L"[E] Invalid Input\n");
+                break;
+            }
+            if(bMovedAway) {
+                MoveWindow(hwnd, nClassInWindowPosX, nClassInWindowPosY, nClassInWindowWidth, nClassInWindowHeight, FALSE);
+                bMovedAway = false;
+            }
+            else {
+                nClassInWindowPosX = rect.left, nClassInWindowPosY = rect.top;
+                MoveWindow(hwnd, 6666, 6666, nClassInWindowWidth, nClassInWindowHeight, FALSE);
+                bMovedAway = true;
+            }
+        }
+        break;
